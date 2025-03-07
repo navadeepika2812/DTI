@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan Pro - Food Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* (Existing styles) */
+         /* Previous CSS styles remain unchanged */
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                        url('https://images.unsplash.com/photo-1498837167922-ddd27525d352') center/cover fixed;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(44, 95, 45, 0.9);
+            padding: 2rem 1rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .upload-btn {
+            background: #2c5f2d;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #1e401f;
+            transform: translateY(-2px);
+        }
+
+        #image-preview {
+            max-width: 300px;
+            margin: 1rem auto;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .analysis-section {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .nutrition-card, .health-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            color: #333;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .health-card {
+            background: rgba(255, 245, 230, 0.9);
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .nutrition-item {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .health-messages {
+            margin-top: 1rem;
+        }
+
+        .message {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+
+        .camera-container {
+            position: relative;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+
+        #cameraPreview {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .camera-controls {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .capture-btn {
+            background: #2c5f2d;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            width: 70px;
+            height: 70px;
+            margin: 1rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .close-camera {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .camera-instructions {
+            color: white;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .upload-section {
+                padding: 1rem;
+            }
+        }
+
+        .loading {
+            display: none; /* Hide the loading spinner initially */
+        }
+
+        #image-preview {
+            max-width: 300px;
+            margin: 1rem auto;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* (Other styles) */
+    </style>
+</head>
+<body>
+    <!-- Keep the existing HTML structure -->
+    <header class="header">
+        <h1>NutriScan Pro</h1>
+        <p>AI-Powered Food Analysis & Safety Check</p>
+    </header>
+
+    <div class="container">
+        <div class="upload-section">
+            <div class="input-options">
+                <button onclick="openCamera()" class="upload-btn">
+                    <i class="fas fa-camera"></i> Take Photo
+                </button>
+                <span style="color: #666; margin: 0 1rem;">OR</span>
+                <button onclick="document.getElementById('fileInput').click()" class="upload-btn">
+                    <i class="fas fa-upload"></i> Upload Image
+                </button>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" hidden>
+            <img id="image-preview" alt="Preview">
+            <div class="error" id="errorMessage" style="display: none;"></div>
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner fa-spin"></i> Analyzing nutritional content...
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="nutrition-card" id="resultsCard">
+                <h2>Nutritional Composition</h2>
+                <div class="nutrition-grid" id="nutritionFacts"></div>
+            </div>
+
+            <div class="health-card" id="healthAdvice">
+                <h2>Health Recommendations</h2>
+                <div class="health-messages" id="healthMessages"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="camera-modal" id="cameraModal">
+        <div class="camera-container">
+            <span class="close-camera" onclick="closeCamera()">&times;</span>
+            <div class="camera-instructions">
+                <p>Position your food in the frame and click capture!</p>
+            </div>
+            <video id="cameraPreview" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button class="capture-btn" onclick="captureImage()">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      const cameraModal = document.getElementById('cameraModal');
+const cameraPreview = document.getElementById('cameraPreview');
+const errorMessage = document.getElementById('errorMessage');
+const loading = document.getElementById('loading');
+const imagePreview = document.getElementById('image-preview');
+const resultsCard = document.getElementById('resultsCard');
+const healthAdvice = document.getElementById('healthAdvice');
+const nutritionFacts = document.getElementById('nutritionFacts');
+const healthMessages = document.getElementById('healthMessages');
+let cameraStream = null;
+
+// Image Validation (Mock AI Detection)
+function isFoodImage(imageSrc) {
+    // In real implementation, integrate with ML model
+    const nonFoodKeywords = ['person', 'animal', 'pet', 'face'];
+    const randomCheck = Math.random() > 0.2; // 80% success rate for demo
+    const fileName = document.getElementById('fileInput').files[0]?.name.toLowerCase() || '';
+    const hasInvalidKeyword = nonFoodKeywords.some(keyword => fileName.includes(keyword));
+    
+    return randomCheck && !hasInvalidKeyword;
+}
+
+// Camera Functions
+async function openCamera() {
+    try {
+        cameraModal.style.display = 'block';
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        });
+        cameraPreview.srcObject = cameraStream;
+    } catch (error) {
+        alert('Camera access denied. Please enable camera permissions.');
+        closeCamera();
+    }
+}
+
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+    }
+    cameraModal.style.display = 'none';
+}
+
+function captureImage() {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = cameraPreview.videoWidth;
+    canvas.height = cameraPreview.videoHeight;
+    context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+    
+    const imageData = canvas.toDataURL('image/jpeg');
+    imagePreview.onload = () => {
+        imagePreview.style.display = 'block';
+        handleImageAnalysis(imageData);
+    };
+    imagePreview.src = imageData;
+    closeCamera();
+}
+
+// File Input Handler
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.onload = () => {
+                imagePreview.style.display = 'block';
+                handleImageAnalysis(e.target.result);
+            };
+            imagePreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Image Processing
+function handleImageAnalysis(imageData) {
+    errorMessage.style.display = 'none';
+    resultsCard.style.display = 'none';
+    healthAdvice.style.display = 'none';
+    healthMessages.innerHTML = '';
+
+    if (!isFoodImage(imageData)) {
+        errorMessage.innerHTML = `
+            <strong>Invalid Content Detected!</strong><br>
+            Please upload food items only. Detected non-food content.
+        `;
+        errorMessage.style.display = 'block';
+        imagePreview.style.display = 'none';
+        return;
+    }
+
+    loading.style.display = 'block';
+    analyzeImage();
+}
+
+// Analysis Function
+function analyzeImage() {
+    setTimeout(() => {
+        loading.style.display = 'none';
+        resultsCard.style.display = 'grid';
+        healthAdvice.style.display = 'block';
+        
+        const nutritionData = {
+            calories: Math.floor(Math.random() * 500) + 100,
+            fat: (Math.random() * 30).toFixed(1),
+            protein: (Math.random() * 30).toFixed(1),
+            carbs: (Math.random() * 100).toFixed(1),
+            fiber: (Math.random() * 10).toFixed(1),
+            sugar: (Math.random() * 40).toFixed(1)
+        };
+
+        // Update Nutrition Facts
+        nutritionFacts.innerHTML = `
+            <div class="nutrition-item">
+                <h3>Calories</h3>
+                <p>${nutritionData.calories} kcal</p>
+            </div>
+            <div class="nutrition-item">
+                <h3>Fat</h3>
+                <p>${nutritionData.fat}g</p>
+            </div>
+            <div class="nutrition-item">
+                <h3>Protein</h3>
+                <p>${nutritionData.protein}g</p>
+            </div>
+            <div class="nutrition-item">
+                <h3>Carbs</h3>
+                <p>${nutritionData.carbs}g</p>
+            </div>
+            <div class="nutrition-item">
+                <h3>Fiber</h3>
+                <p>${nutritionData.fiber}g</p>
+            </div>
+            <div class="nutrition-item">
+                <h3>Sugar</h3>
+                <p>${nutritionData.sugar}g</p>
+            </div>
+        `;
+
+        // Generate Health Messages
+        const messages = [];
+        if (nutritionData.fat > 15) {
+            messages.push({
+                type: 'warning',
+                content: `
+                    <div class="message warning">
+                        <strong>High Fat Content (${nutritionData.fat}g):</strong>
+                        <ul>
+                            <li>Consider smaller portion sizes</li>
+                            <li>Balance with high-fiber vegetables</li>
+                            <li>Choose leaner protein sources next meal</li>
+                            <li>Monitor saturated fat intake for heart health</li>
+                        </ul>
+                    </div>
+                `
+            });
+        }
+
+        if (nutritionData.sugar > 25) {
+            messages.push({
+                type: 'warning',
+                content: `
+                    <div class="message warning">
+                        <strong>High Sugar Content (${nutritionData.sugar}g):</strong>
+                        <ul>
+                            <li>Limit added sugars in subsequent meals</li>
+                            <li>Be aware of hidden sugars in processed foods</li>
+                            <li>Consider natural sugar alternatives</li>
+                            <li>Maintain good oral hygiene after consumption</li>
+                        </ul>
+                    </div>
+                `
+            });
+        }
+
+        if (nutritionData.protein > 20) {
+            messages.push({
+                type: 'success',
+                content: `
+                    <div class="message success">
+                        <strong>High Protein Content (${nutritionData.protein}g):</strong>
+                        <ul>
+                            <li>Excellent for muscle repair and growth</li>
+                            <li>Helps maintain feeling of fullness</li>
+                            <li>Combine with complex carbs for energy</li>
+                            <li>Stay hydrated to support protein metabolism</li>
+                        </ul>
+                    </div>
+                `
+            });
+        }
+
+        if (nutritionData.fiber > 5) {
+            messages.push({
+                type: 'success',
+                content: `
+                    <div class="message success">
+                        <strong>Good Fiber Content (${nutritionData.fiber}g):</strong>
+                        <ul>
+                            <li>Supports digestive health</li>
+                            <li>Helps maintain healthy cholesterol levels</li>
+                            <li>Combine with adequate water intake</li>
+                            <li>Include variety of fiber sources in diet</li>
+                        </ul>
+                    </div>
+                `
+            });
+        }
+
+        healthMessages.innerHTML = messages.map(msg => msg.content).join('');
+    }, 1500);
+} 
+    </script>
+</body>
+</html>
